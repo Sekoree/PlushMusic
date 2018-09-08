@@ -1,13 +1,13 @@
 # PlushMusic
 "Ready to use" Discord music bot using Lavalink
 
-##What you need
+## What you need
 - [Lavalink 3](https://github.com/Frederikam/Lavalink)
   -> this needs Java 10, make sure its installed!
 - [Discord Bot Token](https://discordapp.com/developers/applications/)
 - (optional) Youtube API Token
 
-##Setup
+## Setup
 1. Make a new Applications in Discords Dev Panel, and make a bot user
   -> invite the bot to your server with a link like this
   -> https://discordapp.com/oauth2/authorize?client_id=BOT-CLIENT-IDscope=bot&permissions=104197184
