@@ -13,7 +13,6 @@ using DSharpPlus.Net.Udp;
 using System.Collections.Generic;
 using DSharpPlus.CommandsNext.Attributes;
 using PlushMusic.Commands.Audio;
-using PlushMusic;
 
 namespace PlushMusic.BotClass.BotNew
 {

@@ -2,22 +2,18 @@
 using System.Threading.Tasks;
 using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Attributes;
-using DSharpPlus.Interactivity;
-using DSharpPlus.Lavalink.EventArgs;
 using DSharpPlus.Entities;
 using System.Linq;
-using System.Collections.Generic;
 using Google.Apis.YouTube.v3;
 using Google.Apis.Services;
 using PlushMusic.BotClass.BotNew;
 using PlushMusic.Commands.Audio;
-using PlushMusic;
 
 namespace PlushMusic.Commands
 {
     class VoiceNew : BaseCommandModule
     {
-        [Command("join"), Description("Bot join voicechannel"), RequireBotPermissions(DSharpPlus.Permissions.SendMessages)]
+        [Command("join"), Description("Lets the bot join the VC you're in!"), RequireBotPermissions(DSharpPlus.Permissions.SendMessages)]
         public async Task Join(CommandContext ctx)
         {
             var chn = ctx.Member.VoiceState?.Channel;
@@ -37,7 +33,7 @@ namespace PlushMusic.Commands
             await ctx.RespondAsync("Heya!");
             await Task.CompletedTask;
         }
-        [Command("leave"), Description("Bot leaves voicechannel"), RequireBotPermissions(DSharpPlus.Permissions.SendMessages)]
+        [Command("leave"), Description("The Bot will leave the VC (only works if you're in that VC too)\n*Optional:* ``<prefix>leave r`` will clear queue and leave"), RequireBotPermissions(DSharpPlus.Permissions.SendMessages)]
         public async Task Leave(CommandContext ctx, string LeaveOptions = null)
         {
             var chn = ctx.Member.VoiceState?.Channel;
@@ -70,7 +66,7 @@ namespace PlushMusic.Commands
             Console.WriteLine($"[{ctx.Guild.Id}] Left VC");
             await Task.CompletedTask;
         }
-        [Command("pause"), Description("pause playback"), RequireBotPermissions(DSharpPlus.Permissions.SendMessages)]
+        [Command("pause"), Description("Pauses the current song (or resumes if its currently paused)"), RequireBotPermissions(DSharpPlus.Permissions.SendMessages)]
         public async Task Pause(CommandContext ctx)
         {
             var chn = ctx.Member.VoiceState?.Channel;
@@ -92,7 +88,7 @@ namespace PlushMusic.Commands
             }
             await Task.CompletedTask;
         }
-        [Command("resume"), Aliases("unpause"), RequireBotPermissions(DSharpPlus.Permissions.SendMessages)]
+        [Command("resume"), Aliases("unpause"), RequireBotPermissions(DSharpPlus.Permissions.SendMessages), Description("Resumes the prevously paused song")]
         public async Task Resume(CommandContext ctx)
         {
             var chn = ctx.Member.VoiceState?.Channel;
@@ -109,7 +105,7 @@ namespace PlushMusic.Commands
             Console.WriteLine($"[{ctx.Guild.Id}] Resumed");
             await Task.CompletedTask;
         }
-        [Command("repeat"), Aliases("r"), RequireBotPermissions(DSharpPlus.Permissions.SendMessages)]
+        [Command("repeat"), Aliases("r"), RequireBotPermissions(DSharpPlus.Permissions.SendMessages), Description("Turns repeat of the current song on or off")]
         public async Task Repeat(CommandContext ctx)
         {
             var chn = ctx.Member.VoiceState?.Channel;
@@ -125,7 +121,7 @@ namespace PlushMusic.Commands
             Console.WriteLine($"[{ctx.Guild.Id}] Repeat set to {Bot.guit[pos].repeat}");
             await Task.CompletedTask;
         }
-        [Command("repeatall"), Aliases("ra"), RequireBotPermissions(DSharpPlus.Permissions.SendMessages)]
+        [Command("repeatall"), Aliases("ra"), RequireBotPermissions(DSharpPlus.Permissions.SendMessages), Description("Repeats all songs that are int the queue")]
         public async Task RepeatAll(CommandContext ctx)
         {
             var chn = ctx.Member.VoiceState?.Channel;
@@ -141,7 +137,7 @@ namespace PlushMusic.Commands
             Console.WriteLine($"[{ctx.Guild.Id}] RepeatAll set to {Bot.guit[pos].repeatAll}");
             await Task.CompletedTask;
         }
-        [Command("shuffle"), Aliases("s"), RequireBotPermissions(DSharpPlus.Permissions.SendMessages)]
+        [Command("shuffle"), Aliases("s"), RequireBotPermissions(DSharpPlus.Permissions.SendMessages), Description("Will play the queue in shuffle mode")]
         public async Task Shuffle(CommandContext ctx)
         {
             var chn = ctx.Member.VoiceState?.Channel;
@@ -157,7 +153,7 @@ namespace PlushMusic.Commands
             Console.WriteLine($"[{ctx.Guild.Id}] Shuffle set to {Bot.guit[pos].shuffle}");
             await Task.CompletedTask;
         }
-        [Command("playlist"), Aliases("pp", "pl"), RequireBotPermissions(DSharpPlus.Permissions.SendMessages)]
+        [Command("playlist"), Aliases("pp", "pl"), RequireBotPermissions(DSharpPlus.Permissions.SendMessages), Description("Load a playlist into queue, use ``<prefix>play`` to start playback (if you used this after ``<prefix>join``")]
         public async Task Playlist(CommandContext ctx, string uri)
         {
             var chn = ctx.Member.VoiceState?.Channel;
@@ -193,7 +189,7 @@ namespace PlushMusic.Commands
             Console.WriteLine($"[{ctx.Guild.Id}] Playlist loaded {uri}");
             await Task.CompletedTask;
         }
-        [Command("queueclear"), Aliases("qc"), RequireBotPermissions(DSharpPlus.Permissions.SendMessages)]
+        [Command("queueclear"), Aliases("qc"), RequireBotPermissions(DSharpPlus.Permissions.SendMessages), Description("Clears the queue")]
         public async Task QueueClear(CommandContext ctx)
         {
             var chn = ctx.Member.VoiceState?.Channel;
@@ -212,7 +208,7 @@ namespace PlushMusic.Commands
             Console.WriteLine($"[{ctx.Guild.Id}] Queue cleard");
             await ctx.RespondAsync("Cleared Queue");
         }
-        [Command("queue"), Aliases("q"), RequireBotPermissions(DSharpPlus.Permissions.EmbedLinks & DSharpPlus.Permissions.SendMessages)]
+        [Command("queue"), Aliases("q"), RequireBotPermissions(DSharpPlus.Permissions.EmbedLinks & DSharpPlus.Permissions.SendMessages), Description("Shows you the current queue")]
         public async Task Queue(CommandContext ctx)
         {
             var chn = ctx.Member.VoiceState?.Channel;
@@ -227,7 +223,7 @@ namespace PlushMusic.Commands
             Console.WriteLine($"[{ctx.Guild.Id}] Showing queue");
             await Task.CompletedTask;
         }
-        [Command("volume"), Aliases("vol"), RequireBotPermissions(DSharpPlus.Permissions.SendMessages)]
+        [Command("volume"), Aliases("vol"), RequireBotPermissions(DSharpPlus.Permissions.SendMessages), Description("Change the volume: 0-150")]
         public async Task Volume(CommandContext ctx, int vol = 100)
         {
             var chn = ctx.Member.VoiceState?.Channel;
@@ -244,7 +240,7 @@ namespace PlushMusic.Commands
             Console.WriteLine($"[{ctx.Guild.Id}] Volume changed {vol}");
             await Task.CompletedTask;
         }
-        [Command("queueremove"), Aliases("qr"), RequireBotPermissions(DSharpPlus.Permissions.SendMessages)]
+        [Command("queueremove"), Aliases("qr"), RequireBotPermissions(DSharpPlus.Permissions.SendMessages), Description("Remove a specific song from the queue")]
         public async Task QueueRemove(CommandContext ctx, int r)
         {
             var chn = ctx.Member.VoiceState?.Channel;
@@ -266,7 +262,7 @@ namespace PlushMusic.Commands
             Console.WriteLine($"[{ctx.Guild.Id}] Song Removed");
             await Task.CompletedTask;
         }
-        [Command("nowplaying"), Aliases("np"), RequireBotPermissions(DSharpPlus.Permissions.SendMessages & DSharpPlus.Permissions.EmbedLinks)]
+        [Command("nowplaying"), Aliases("np"), RequireBotPermissions(DSharpPlus.Permissions.SendMessages & DSharpPlus.Permissions.EmbedLinks), Description("Shows you what song is currently playing!")]
         public async Task NowPlaying(CommandContext ctx)
         {
             var chn = ctx.Member.VoiceState?.Channel;
@@ -329,7 +325,7 @@ namespace PlushMusic.Commands
             Console.WriteLine($"[{ctx.Guild.Id}] NowPlaying");
             await Task.CompletedTask;
         }
-        [Command("stop"), RequireBotPermissions(DSharpPlus.Permissions.SendMessages)]
+        [Command("stop"), RequireBotPermissions(DSharpPlus.Permissions.SendMessages), Description("Stop the song (``<prefix>play`` will start playback again)\n*Optional:* ``<prefix>stop r`` will stop and clear the queue")]
         public async Task Stop(CommandContext ctx, string Options = null)
         {
             var chn = ctx.Member.VoiceState?.Channel;
@@ -358,7 +354,7 @@ namespace PlushMusic.Commands
             await ctx.RespondAsync("Stopped!");
             await Task.CompletedTask;
         }
-        [Command("play"),Aliases("p"), Cooldown(1, 5, CooldownBucketType.Guild), RequireBotPermissions(DSharpPlus.Permissions.SendMessages)]
+        [Command("play"),Aliases("p"), Cooldown(1, 5, CooldownBucketType.Guild), RequireBotPermissions(DSharpPlus.Permissions.SendMessages), Description("Play a song (or add one to queue)\n**Usage:** ``<prefix>play <searchTermOrURL>``\nAlso works just as ``<prefix>play`` to resume queue")]
         public async Task Play(CommandContext ctx, [RemainingText] string Song = null){
             var chn = ctx.Member.VoiceState?.Channel;
             var bot = await ctx.Guild.GetMemberAsync(ctx.Client.CurrentUser.Id);
@@ -402,7 +398,7 @@ namespace PlushMusic.Commands
             }
             await Task.CompletedTask;
         }
-        [Command("skip"), RequireBotPermissions(DSharpPlus.Permissions.SendMessages)]
+        [Command("skip"), RequireBotPermissions(DSharpPlus.Permissions.SendMessages), Description("Skip the current song")]
         public async Task Skip(CommandContext ctx)
         {
             var chn = ctx.Member.VoiceState?.Channel;
