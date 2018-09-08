@@ -1,0 +1,28 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>netcoreapp2.1</TargetFramework>
+    <StartupObject>PlushMusic.Program</StartupObject>
+    <ApplicationIcon />
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <Optimize>true</Optimize>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="DSharpPlus" Version="4.0.0-nightly-00522" />
+    <PackageReference Include="DSharpPlus.CommandsNext" Version="4.0.0-nightly-00522" />
+    <PackageReference Include="DSharpPlus.Interactivity" Version="4.0.0-nightly-00522" />
+    <PackageReference Include="DSharpPlus.Lavalink" Version="4.0.0-nightly-00522" />
+    <PackageReference Include="Google.Apis.YouTube.v3" Version="1.35.1.1226" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="config.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+</Project>

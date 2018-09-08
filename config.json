@@ -1,0 +1,9 @@
+{
+  "Token": "Your Bot Token",
+  "Prefix": "!",
+  "YouTubeAPIToken": "optional for extended info in now playing command",
+  "LavaLinkIP": "LavaLink Server IP or Hostname",
+  "LavaLinkPassword": "",
+  "SocketPort": 80,
+  "RestPort": 2333
+}
