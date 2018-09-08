@@ -2,7 +2,7 @@
 "Ready to use" Discord music bot using Lavalink
 
 ## What you need
-- [Lavalink 3](https://github.com/Frederikam/Lavalink)
+- [Lavalink 3](https://github.com/Frederikam/Lavalink)\n
   -> this needs Java 10, make sure its installed!
 - [Discord Bot Token](https://discordapp.com/developers/applications/)
 - (optional) Youtube API Token
