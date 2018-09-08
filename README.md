@@ -1,6 +1,7 @@
 # PlushMusic
 "Ready to use" Discord music bot using Lavalink
 
+this is basically a complete standalsone version of the music systems that MeekPlush and Hatsune Miku use
 ## What you need
 - [Lavalink 3](https://github.com/Frederikam/Lavalink)<br>
   -> this needs Java 10, make sure its installed!
