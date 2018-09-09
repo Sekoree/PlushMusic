@@ -82,7 +82,10 @@ namespace PlushMusic.Commands.Audio
                         rr = 0;
                     }
                 }
-                await Task.Run(() => Events.setNP(pos, Bot.guit[pos].queue[rr]));
+                if (Bot.guit[pos].queue.Count != 0)
+                {
+                    await Task.Run(() => Events.setNP(pos, Bot.guit[pos].queue[rr]));
+                }
                 Console.WriteLine($"[{ctx.Guild.Id}] Started playing: {Bot.guit[pos].playnow.LavaTrack.Title} by {Bot.guit[pos].playnow.LavaTrack.Author}");
                 await LavaLinkHandOff(pos, Bot.guit[pos].playnow.LavaTrack, ctx, rr);
                 if (!Bot.guit[pos].repeat && !Bot.guit[pos].repeatAll && Bot.guit[pos].LLGuild != null && !Bot.guit[pos].stoppin) {
