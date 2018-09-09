@@ -16,5 +16,5 @@ this is basically a complete standalsone version of the music systems that MeekP
 2. Start up a Lavalink 3 server, use the [example config](https://github.com/Frederikam/Lavalink/blob/master/LavalinkServer/application.yml.example) (edit that to your needs and desires)<br>
   -> make a file called application.yml in the same directory as the Lavalink.jar and paste the stuff from the link in there
 3. Edit the config.json<br>
-  -> if no Youtube API Key is provided, extenden track info in the "nowplaying" will be disabled
+  -> if no Youtube API Key is provided, extended track info in the "nowplaying" command will be disabled
 4. Use the Start.bat to start the bot!
