@@ -68,9 +68,8 @@ namespace PlushMusic.Commands.Audio
             var con = Bot.guit[0].LLinkCon;
             while (Bot.guit[pos].queue.Count != 0) {
                 if (Bot.guit[pos].LLGuild == null || Bot.guit[pos].stoppin) break;
-                var P = Events.setPlay(pos);
-                P.Wait();
-                System.Random rnd = new System.Random();
+                await Task.Run(() => Events.setPlay(pos));
+                Random rnd = new Random();
                 int rr = 0;
                 if (Bot.guit[pos].shuffle) {
                     rr = rnd.Next(0, Bot.guit[pos].queue.Count);
@@ -82,7 +81,7 @@ namespace PlushMusic.Commands.Audio
                         rr = 0;
                     }
                 }
-                if (Bot.guit[pos].queue.Count != 0)
+                if (Bot.guit[pos].queue.Count != 0 || Bot.guit[pos].queue[rr] == null)
                 {
                     await Task.Run(() => Events.setNP(pos, Bot.guit[pos].queue[rr]));
                 }
