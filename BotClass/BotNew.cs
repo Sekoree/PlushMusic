@@ -10,11 +10,13 @@ using DSharpPlus.EventArgs;
 using DSharpPlus.Entities;
 using System.Threading;
 using DSharpPlus.Net.Udp;
+using Newtonsoft.Json;
 using System.Collections.Generic;
 using DSharpPlus.CommandsNext.Attributes;
-using PlushMusic.Commands.Audio;
+using BetaPlush.Commands.MusicEx;
+using static PlushMusic.Program;
 
-namespace PlushMusic.BotClass.BotNew
+namespace MikuMusicSharp.BotClass.BotNew
 {
     public class Bot : IDisposable
     {
@@ -22,18 +24,19 @@ namespace PlushMusic.BotClass.BotNew
         private CancellationTokenSource _cts;
         public static LavalinkConfiguration lcfg = new LavalinkConfiguration
         {
-            Password = Program.config.LavaLinkPassword,
-            SocketEndpoint = new ConnectionEndpoint { Hostname = Program.config.LavaLinkIP, Port = Program.config.SocketPort },
-            RestEndpoint = new ConnectionEndpoint { Hostname = Program.config.LavaLinkIP, Port = Program.config.RestPort }
+            Password = config.LavaLinkPassword,
+            SocketEndpoint = new ConnectionEndpoint { Hostname = config.LavaLinkIP, Port = config.SocketPort },
+            RestEndpoint = new ConnectionEndpoint { Hostname = config.LavaLinkIP, Port = config.RestPort }
         };
         public static List<Gsets> guit = new List<Gsets>();
+        public int ok = 0;
 
         public Bot()
         {
             bot = new DiscordShardedClient(new DiscordConfiguration()
             {
                 LogLevel = LogLevel.Debug,
-                Token = Program.config.Token,
+                Token = config.Token,
                 TokenType = TokenType.Bot,
                 AutomaticGuildSync = true,
                 UseInternalLogHandler = true,
@@ -50,7 +53,7 @@ namespace PlushMusic.BotClass.BotNew
 
             var commands = await bot.UseCommandsNextAsync(new CommandsNextConfiguration()
             {
-                StringPrefixes = (new[] { Program.config.Prefix }),
+                StringPrefixes = (new[] { config.Prefix }),
                 EnableDefaultHelp = true,
                 IgnoreExtraArguments = false,
                 CaseSensitive = false
@@ -59,7 +62,8 @@ namespace PlushMusic.BotClass.BotNew
             var llink = await bot.UseLavalinkAsync();
             foreach (var cmd in commands)
             {
-                cmd.Value.RegisterCommands<Commands.VoiceNew>();
+                cmd.Value.RegisterCommands<BetaPlush.Commands.Music>();
+                //cmd.Value.RegisterCommands<BetaPlush.Commands.PixivTest>();
                 cmd.Value.CommandErrored += Bot_CMDErr;
             }
             bot.ClientErrored += this.Bot_ClientErrored;
@@ -77,41 +81,28 @@ namespace PlushMusic.BotClass.BotNew
                 {
                     try
                     {
+                        var con = guit[0].LLinkCon;
                         var pos = guit.FindIndex(x => x.GID == e.Guild.Id);
-                        if (pos != -1)
+                        if (pos == -1 || !con.IsConnected || con == null) { await Task.CompletedTask; return; }
+                        var norm = e?.Channel?.Id;
+                        var afte = e?.After?.Channel?.Id;
+                        var befo = e?.Before?.Channel?.Id;
+                        if (norm == guit[pos].LLGuild?.Channel?.Id || afte == guit[pos].LLGuild?.Channel?.Id || befo == guit[pos].LLGuild?.Channel?.Id)
                         {
-                            await Task.Delay(500);
-                            if (guit[pos].LLGuild.Channel.Id == e.Before.Channel.Id)
+                            if (guit[pos].LLGuild?.Channel?.Users.Where(x => !x.IsBot).Count() == 0)
                             {
-                                if (guit[pos].LLGuild.Channel.Users.Where(x => x.IsBot == false).Count() == 0)
-                                {
-                                    guit[pos].alone = true;
-                                }
-                                else
-                                {
-                                    guit[pos].alone = false;
-                                }
-                                if (guit[pos].LLGuild.Channel.Users.Where(x => x.IsBot == false).Count() == 0 && guit[pos].queue.Count > 0 && guit[pos].LLGuild.Channel.Id == e.Before.Channel.Id && !guit[pos].paused)
-                                {
-                                    await e.Guild.GetChannel(guit[pos].cmdChannel).SendMessageAsync("Playback was paused since everybody left the voicechannel, use ``m!resume`` to unpause");
-                                    guit[pos].LLGuild.Pause();
-                                    guit[pos].paused = true;
-                                }
-                                handleVoidisc(pos);
+                                guit[pos].paused = true;
+                                await Task.Run(() => guit[pos].AudioFunctions.Pause(pos));
+                                await e.Guild.GetChannel(guit[pos].cmdChannel).SendMessageAsync($"Playback was paused since everybody left the channel! use ``{config.Prefix}resume`` to resume, otherwise I'll also disconnect in ~5min uwu");
+                                var haDi = handleVoidisc(pos);
+                                haDi.Wait(millisecondsTimeout: 2500);
                             }
                         }
                     }
-                    catch
+                    catch (Exception ex)
                     {
-                        try
-                        {
-                            var pos = guit.FindIndex(x => x.GID == e.Guild.Id);
-                            if (pos != -1)
-                            {
-                                handleVoidisc(pos);
-                            }
-                        }
-                        catch { }
+                        Console.WriteLine(ex.Message);
+                        Console.WriteLine(ex.StackTrace);
                     }
                     await Task.CompletedTask;
                 };
@@ -133,29 +124,34 @@ namespace PlushMusic.BotClass.BotNew
                             playing = false,
                             rAint = 0,
                             repeatAll = false,
-                            alone = false,
-                            paused = true,
-                            stoppin = false
+                            AudioEvents = new LLEvents(),
+                            AudioFunctions = new Functions(),
+                            AudioQueue = new Queue(),
+                            sstop = false,
+                            paused = false
                         });
+                        ok++;
                     }
                     await Task.CompletedTask;
                 };
-            }
-            bot.GuildDownloadCompleted += async e =>
-            {//
-                DiscordActivity test = new DiscordActivity
+
+                shard.Value.GuildDeleted += async e =>
                 {
-                    Name = $"{Program.config.Prefix}help",
-                    ActivityType = ActivityType.Playing
+                    ok--;
+                    await Task.CompletedTask;
                 };
-                await bot.UpdateStatusAsync(activity: test, userStatus: UserStatus.Online);
-                await Task.Delay(500);
-                try
+
+                shard.Value.GuildDownloadCompleted += async e =>
                 {
-                    foreach (var shard in bot.ShardClients)
-                    {
+                    Console.WriteLine("GD!");
+                    UpdatePre().Wait(500);
+                    await Task.Delay(500);
+                    //foreach (var shard in bot.ShardClients)
+                    //{
+                        //Console.WriteLine("Shards!");
                         foreach (var guilds in shard.Value.Guilds)
                         {
+                            //Console.WriteLine("Guild!");
                             guit.Add(new Gsets
                             {
                                 GID = guilds.Value.Id,
@@ -169,25 +165,47 @@ namespace PlushMusic.BotClass.BotNew
                                 playing = false,
                                 rAint = 0,
                                 repeatAll = false,
-                                alone = false,
-                                paused = true,
-                                stoppin = false
+                                AudioEvents = new LLEvents(),
+                                AudioFunctions = new Functions(),
+                                AudioQueue = new Queue(),
+                                sstop = false,
+                                paused = false
                             });
-                        }
+                            if (guilds.Value.Id == 336039472250748928)
+                            {
+                                Console.WriteLine("Derpy guild");
+                            }
+                            ok++;
+                        //}
                     }
                     Console.WriteLine("GuildList Complete");
                     await Task.CompletedTask;
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine(ex.Message);
-                    Console.WriteLine(ex.StackTrace);
-                }
-
-            };
-
+                };
+            }
+            /*bot.Heartbeated += async e =>
+            {
+                AuthDiscordBotListApi DblApi = new AuthDiscordBotListApi(483461221643845632, "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjQ4MzQ2MTIyMTY0Mzg0NTYzMiIsImJvdCI6dHJ1ZSwiaWF0IjoxNTM2MzUyODM5fQ.6qaJxtrXQ22FI8MrLn5m3YxOYkA_hYaKGKtK7zgWbGU");
+                var me = await DblApi.GetMeAsync();
+                await me.UpdateStatsAsync(ok);
+                Console.WriteLine($"DBL Updated: {ok} Shards: {e.Client.ShardCount}");
+            };*/
+            Console.WriteLine("GD?");
             await WaitForCancellationAsync();
         }
+
+        private async Task UpdatePre()
+        {
+            while (true)
+            {
+                DiscordActivity test = new DiscordActivity
+                {
+                    Name = $"{config.Prefix}help for commands!",
+                    ActivityType = ActivityType.Playing
+                };
+                await bot.UpdateStatusAsync(activity: test, userStatus: UserStatus.Online);
+                await Task.Delay(TimeSpan.FromMinutes(30));
+            }
+        } 
 
         private async Task WaitForCancellationAsync()
         {
@@ -236,32 +254,35 @@ namespace PlushMusic.BotClass.BotNew
             Console.WriteLine(value);
         }
 
-        public async void handleVoidisc(int pos) //if a message needs to be sent to another channel, in commands this is not needed
+        public async Task handleVoidisc(int pos) //if a message needs to be sent to another channel, in commands this is not needed
         {
             try
             {
                 guit[pos].offtime = DateTime.Now;
-                while (guit[pos].alone || guit[pos].queue.Count < 1)
+                await Task.CompletedTask;
+                while (guit[pos].LLGuild.Channel.Users.Where(x => !x.IsBot).Count() == 0 || guit[pos].queue.Count < 1)
                 {
+                    ///Console.WriteLine("Disc");
                     if (DateTime.Now.Subtract(guit[pos].offtime).TotalMinutes > 5)
                     {
-                        guit[pos].LLGuild.PlaybackFinished -= Events.PlayFin;
-                        guit[pos].LLGuild.TrackStuck -= Events.PlayStu;
-                        guit[pos].LLGuild.TrackException -= Events.PlayErr;
+                        guit[pos].LLGuild.PlaybackFinished -= guit[pos].AudioEvents.PlayFin;
+                        guit[pos].LLGuild.TrackStuck -= guit[pos].AudioEvents.PlayStu;
+                        guit[pos].LLGuild.TrackException -= guit[pos].AudioEvents.PlayErr;
                         guit[pos].LLGuild.Disconnect();
+                        guit[pos].playing = false;
+                        guit[pos].paused = false;
                         guit[pos].LLGuild = null;
                         guit[pos].offtime = DateTime.Now;
-                        guit[pos].paused = false;
                         break;
                     }
                     else
                     {
                         await Task.Delay(10000);
                     }
-
                 }
             }
             catch { }
+            await Task.CompletedTask;
         }
 
         private async Task Bot_CMDErr(CommandErrorEventArgs ex) //if bot error
@@ -314,10 +335,12 @@ namespace PlushMusic.BotClass.BotNew
         public int rAint { get; set; }
         public bool shuffle { get; set; }
         public bool playing { get; set; }
-        public bool paused { get; set; }
-        public bool stoppin { get; set; }
-        public bool alone { get; set; }
         public ulong cmdChannel { get; set; }
+        public bool sstop { get; set; }
+        public bool paused { get; set; }
+        public LLEvents AudioEvents { get; set; }
+        public Functions AudioFunctions { get; set; }
+        public Queue AudioQueue { get; set; }
     }
 
     public class Gsets2
@@ -332,6 +355,5 @@ namespace PlushMusic.BotClass.BotNew
         public DiscordMember requester { get; set; }
         public LavalinkTrack LavaTrack { get; set; }
         public DateTime addtime { get; set; }
-        public bool sstop { get; set; }
     }
 }

@@ -1,6 +1,6 @@
 ﻿using System;
 using System.IO;
-using PlushMusic.BotClass.BotNew;
+using MikuMusicSharp.BotClass.BotNew;
 using Newtonsoft.Json;
 
 namespace PlushMusic
